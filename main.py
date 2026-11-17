@@ -32,23 +32,40 @@ async def main() -> None:
         except (NotImplementedError, RuntimeError):
             pass
 
-    tasks = [
-        asyncio.create_task(server.serve(), name="webapp"),
-        asyncio.create_task(run_admin_bot(app_state=app.state, stop_event=stop_event), name="admin-bot"),
-        asyncio.create_task(run_customer_bot(stop_event=stop_event), name="customer-bot"),
-    ]
+    runners = {
+        "webapp": server.serve,
+        "admin-bot": lambda: run_admin_bot(app_state=app.state, stop_event=stop_event),
+        "customer-bot": lambda: run_customer_bot(stop_event=stop_event),
+    }
+    tasks = {name: asyncio.create_task(fn(), name=name) for name, fn in runners.items()}
     stop_task = asyncio.create_task(stop_event.wait(), name="stop-watcher")
 
-    try:
-        done, _ = await asyncio.wait([*tasks, stop_task], return_when=asyncio.FIRST_COMPLETED)
-        if stop_task in done:
-            server.should_exit = True
-            for task in tasks:
-                task.cancel()
-    finally:
-        for task in [stop_task, *tasks]:
+    async def shutdown() -> None:
+        server.should_exit = True
+        for task in [stop_task, *tasks.values()]:
             task.cancel()
-        await asyncio.gather(stop_task, *tasks, return_exceptions=True)
+        await asyncio.gather(stop_task, *tasks.values(), return_exceptions=True)
+
+    try:
+        while True:
+            done, _ = await asyncio.wait(
+                [stop_task, *tasks.values()], return_when=asyncio.FIRST_COMPLETED
+            )
+            if stop_task in done:
+                break
+            for task in done:
+                name = task.get_name()
+                if not task.cancelled():
+                    exc = task.exception()
+                    if exc:
+                        print(f"[{name}] xatolik: {type(exc).__name__}: {exc}")
+                if stop_event.is_set():
+                    break
+                print(f"[{name}] to'xtadi — 2 soniyadan keyin qayta ishga tushiriladi")
+                await asyncio.sleep(2)
+                tasks[name] = asyncio.create_task(runners[name](), name=name)
+    finally:
+        await shutdown()
 
 
 if __name__ == "__main__":
