@@ -25,8 +25,8 @@ def app_url(view: str | None = None) -> str:
 
 def webapp_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🍔 Buyurtma berish / Mafia menyusi", web_app=WebAppInfo(url=app_url("menu")))],
-        [InlineKeyboardButton(text="📦 Mening buyurtmalarim", web_app=WebAppInfo(url=app_url("orders")))],
+        [InlineKeyboardButton(text="🍔 Buyurtma berish / Mafia menyusi", web_app=WebAppInfo(url="https://mini-app-08l9.onrender.com/"))],
+        [InlineKeyboardButton(text="📦 Mening buyurtmalarim", web_app=WebAppInfo(url="https://mini-app-08l9.onrender.com/"))],
     ])
 
 
