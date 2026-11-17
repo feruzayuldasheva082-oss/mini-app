@@ -1,0 +1,20 @@
+# Maxfiy sozlamalar — HECH QACHON commit qilinmaydi
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Ma'lumotlar bazasi va loglar
+*.db
+*.sqlite3
+*.log
+
+# Tizim fayllari
+.DS_Store
+Thumbs.db

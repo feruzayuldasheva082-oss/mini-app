@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" role="img" aria-labelledby="title desc">
+  <title id="title">Hot Dog Mafia logo</title>
+  <desc id="desc">A friendly hot dog character wearing a fedora hat with the Hot Dog Mafia wordmark.</desc>
+  <rect width="100%" height="100%" fill="#ffffff"/>
+
+  <!-- Fedora -->
+  <ellipse cx="160" cy="92" rx="78" ry="18" fill="#111111"/>
+  <rect x="112" y="40" width="96" height="54" rx="10" fill="#1a1a1a"/>
+  <rect x="112" y="78" width="96" height="10" fill="#d62828"/>
+
+  <!-- Bun back -->
+  <rect x="78" y="110" width="164" height="150" rx="70" fill="#f4b400"/>
+  <rect x="88" y="118" width="144" height="134" rx="62" fill="#ffd166"/>
+
+  <!-- Sausage -->
+  <rect x="132" y="120" width="56" height="140" rx="28" fill="#c1121f"/>
+  <rect x="138" y="128" width="44" height="124" rx="22" fill="#d62828"/>
+
+  <!-- Mustard -->
+  <path d="M150 140
+           C165 155, 145 170, 160 185
+           C175 200, 145 215, 160 230
+           C168 238, 162 248, 156 255"
+        fill="none" stroke="#f4b400" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Face -->
+  <circle cx="142" cy="175" r="7" fill="#111111"/>
+  <circle cx="178" cy="175" r="7" fill="#111111"/>
+  <path d="M145 198 C152 206, 168 206, 175 198" fill="none" stroke="#111111" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Wordmark -->
+  <g font-family="Arial Black, Helvetica, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="160" y="305" font-size="34" fill="#111111">HOT DOG</text>
+    <text x="160" y="340" font-size="34" fill="#d62828">MAFIA</text>
+  </g>
+</svg>
