@@ -49,18 +49,18 @@ Loyiha Bitta Docker konteynerda ishlaydi: server + ikkita bot + SQLite bazasi.
 
 1. GitHub’dagi `mini-app` repo’sini Render’ga ulang: https://dashboard.render.com → **New → Web Service**.
 2. Repo tanlanganda `render.yaml` blueprint avtomatik topiladi va sozlamalarni oladi.
-3. Ko‘rsatilgan 3 ta secret’ni kiriting:
+3. `WEBAPP_URL` ni qo‘lda kiritish shart emas — Render’da `RENDER_EXTERNAL_HOSTNAME` avtomatik bor va kod uni ishlatadi. `ADMIN_IDS` haqiqiy bo‘lsa, admin shu ID orqali tanib olinadi; agar namuna (`123456789`) qolgan bo‘lsa, admin botga birinchi `/start` yuborgan foydalanuvchi admin deb yozib olinadi (bazada `admins` jadvali).
+4. Secret’larni kiriting:
    - `CUSTOMER_BOT_TOKEN`
    - `ADMIN_BOT_TOKEN`
    - `ADMIN_IDS`
-4. Deploy tugallangach, xizmat manzili: `https://hotdog-mafia.onrender.com` (agar nom o‘zgarsa, `WEBAPP_URL` ni shunga mos o‘zgartiring).
-5. Telegram’da mijoz botiga qayta `/start` yuboring — tugmalar yangi manzilga ishlatiladi.
+5. Deploy tugallangach, Telegram’da mijoz botiga qayta `/start` yuboring — tugmalar joriy manzilga ishlatiladi.
 
 ### Muhim
 - `render.yaml` da **pullik plan** (`0.5c-512mb`) va **1 GB doimiy disk** (`/data`) ishlatilgan: botlar uxlamasligi va buyurtmalar yo‘qolmasligi uchun shart.
 - Baza yo‘li: `DATABASE_PATH=/data/hotdog_mafia.db`.
-- `render.yaml` dagi `WEBAPP_URL` ni o‘z domeningizga moslashtirishni unutmang.
-- Health check: `/api/health`.
+- `WEBAPP_URL` ni qo‘lda o‘zgartirish shart emas: Render’da `RENDER_EXTERNAL_HOSTNAME` bo‘yicha avtomatik aniqlanadi.
+- Health check: `/api/health` (yoki `/health`).
 
 ## Har qanday VPS’ga (Docker bilan)
 ```bash

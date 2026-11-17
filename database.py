@@ -30,6 +30,15 @@ async def init_db() -> None:
         )
         await db.execute(
             """
+            CREATE TABLE IF NOT EXISTS admins (
+                user_id INTEGER PRIMARY KEY,
+                username TEXT,
+                created_at INTEGER NOT NULL
+            )
+            """
+        )
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -142,3 +151,19 @@ async def update_order_status(order_id: int, status: str) -> bool:
         cur = await db.execute("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))
         await db.commit()
         return cur.rowcount > 0
+
+
+async def list_admins() -> list[int]:
+    async with aiosqlite.connect(config.database_path) as db:
+        cur = await db.execute("SELECT user_id FROM admins")
+        rows = await cur.fetchall()
+        return [int(r[0]) for r in rows]
+
+
+async def add_admin(user_id: int, username: str | None) -> None:
+    async with aiosqlite.connect(config.database_path) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO admins (user_id, username, created_at) VALUES (?, ?, ?)",
+            (int(user_id), username, int(time.time())),
+        )
+        await db.commit()

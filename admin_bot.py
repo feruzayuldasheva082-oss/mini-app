@@ -18,9 +18,28 @@ STATUS_LABELS = {
 STATUS_FLOW = ["accepted", "cooking", "delivering", "done", "cancelled"]
 
 
-def is_admin(user_id: int) -> bool:
-    # ADMIN_IDS bo'sh bo'lsa hech kim admin emas (xavfsizlik uchun).
-    return bool(config.admin_ids) and user_id in config.admin_ids
+PLACEHOLDER_ADMIN_ID = 123456789
+
+
+async def is_admin(user_id: int) -> bool:
+    # .env dagi namuna ID (123456789) inobatga olinmaydi.
+    configured = [i for i in config.admin_ids if i != PLACEHOLDER_ADMIN_ID]
+    if configured:
+        return user_id in configured
+    return user_id in await database.list_admins()
+
+
+async def ensure_admin(user_id: int, username: str | None) -> bool:
+    """Faqat ADMIN_IDS namuna bo'lganda birinchi /start yuborganni admin qiladi."""
+    if [i for i in config.admin_ids if i != PLACEHOLDER_ADMIN_ID]:
+        return await is_admin(user_id)
+    if await is_admin(user_id):
+        return True
+    if await database.list_admins():
+        return False
+    await database.add_admin(user_id, username)
+    print(f"[admin_bot] Yangi admin royxatga olindi: {user_id} (@{username})")
+    return True
 
 
 def status_keyboard(order_id: int) -> InlineKeyboardMarkup:
@@ -58,7 +77,7 @@ def format_order(o: dict) -> str:
 
 
 async def cmd_start(message: Message):
-    if not is_admin(message.from_user.id):
+    if not await ensure_admin(message.from_user.id, message.from_user.username):
         return
     await message.answer(
         "Hot Dog Mafia Admin bot.\n\nBuyruqlar:\n/orders — oxirgi buyurtmalar\n/new — yangi buyurtmalar\n/order <id> — buyurtma ko‘rish"
@@ -66,7 +85,7 @@ async def cmd_start(message: Message):
 
 
 async def cmd_orders(message: Message):
-    if not is_admin(message.from_user.id):
+    if not await is_admin(message.from_user.id):
         return
     orders = await database.list_orders(limit=15)
     if not orders:
@@ -77,7 +96,7 @@ async def cmd_orders(message: Message):
 
 
 async def cmd_new(message: Message):
-    if not is_admin(message.from_user.id):
+    if not await is_admin(message.from_user.id):
         return
     orders = await database.list_orders(status="new", limit=20)
     if not orders:
@@ -88,7 +107,7 @@ async def cmd_new(message: Message):
 
 
 async def cmd_order(message: Message):
-    if not is_admin(message.from_user.id):
+    if not await is_admin(message.from_user.id):
         return
     parts = (message.text or "").split()
     if len(parts) < 2 or not parts[1].isdigit():
@@ -102,7 +121,7 @@ async def cmd_order(message: Message):
 
 
 async def cb_status(callback: CallbackQuery):
-    if not is_admin(callback.from_user.id):
+    if not await is_admin(callback.from_user.id):
         await callback.answer("Ruxsat yo‘q", show_alert=True)
         return
     _, oid, status = callback.data.split(":", 2)
@@ -120,7 +139,9 @@ async def notify_admins_new_order(bot: Bot, order_id: int):
     if not o:
         return
     text = "🆕 Yangi buyurtma!\n\n" + format_order(o)
-    for admin_id in config.admin_ids:
+    configured = [i for i in config.admin_ids if i != PLACEHOLDER_ADMIN_ID]
+    admin_ids = configured or await database.list_admins()
+    for admin_id in admin_ids:
         try:
             await bot.send_message(admin_id, text, parse_mode="HTML", reply_markup=status_keyboard(order_id))
         except Exception as e:
@@ -133,8 +154,8 @@ async def run_admin_bot(app_state=None, stop_event: asyncio.Event | None = None)
         if stop_event:
             await stop_event.wait()
         return
-    if not config.admin_ids:
-        print("[admin_bot] OGOHLANTIRISH: ADMIN_IDS bo'sh — hech kim admin hisoblanmaydi va xabar yuborilmaydi.")
+    if not [i for i in config.admin_ids if i != PLACEHOLDER_ADMIN_ID]:
+        print("[admin_bot] ADMIN_IDS namuna holatda — birinchi /start yuborgan foydalanuvchi admin bo'ladi.")
     bot = Bot(token=config.admin_bot_token)
     dp = Dispatcher()
     dp.message.register(cmd_start, CommandStart())
