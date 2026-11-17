@@ -43,3 +43,35 @@ python main.py
 - Mijoz botidagi “Mening buyurtmalarim” tugmasi Mini App’ni to‘g‘ridan-to‘g‘ri buyurtmalar bo‘limida ochadi (`?view=orders`). `/tart` buyrug‘i ham `/start` kabi ishlaydi.
 - Menyu va buyurtmalar `hotdog_mafia.db` (SQLite) faylida saqlanadi; birinchi ishga tushishda namuna menyu avtomatik qo‘shiladi.
 - `logo.svg` va `webapp/logo.svg` — Hot Dog Mafia logotipi (stikersiz, toza dizayn).
+
+## Render.com ga deploy qilish (24/7, tavsiya etiladi)
+Loyiha Bitta Docker konteynerda ishlaydi: server + ikkita bot + SQLite bazasi.
+
+1. GitHub’dagi `mini-app` repo’sini Render’ga ulang: https://dashboard.render.com → **New → Web Service**.
+2. Repo tanlanganda `render.yaml` blueprint avtomatik topiladi va sozlamalarni oladi.
+3. Ko‘rsatilgan 3 ta secret’ni kiriting:
+   - `CUSTOMER_BOT_TOKEN`
+   - `ADMIN_BOT_TOKEN`
+   - `ADMIN_IDS`
+4. Deploy tugallangach, xizmat manzili: `https://hotdog-mafia.onrender.com` (agar nom o‘zgarsa, `WEBAPP_URL` ni shunga mos o‘zgartiring).
+5. Telegram’da mijoz botiga qayta `/start` yuboring — tugmalar yangi manzilga ishlatiladi.
+
+### Muhim
+- `render.yaml` da **pullik plan** (`0.5c-512mb`) va **1 GB doimiy disk** (`/data`) ishlatilgan: botlar uxlamasligi va buyurtmalar yo‘qolmasligi uchun shart.
+- Baza yo‘li: `DATABASE_PATH=/data/hotdog_mafia.db`.
+- `render.yaml` dagi `WEBAPP_URL` ni o‘z domeningizga moslashtirishni unutmang.
+- Health check: `/api/health`.
+
+## Har qanday VPS’ga (Docker bilan)
+```bash
+docker build -t hotdog-mafia .
+docker run -d --name hotdog-mafia -p 8000:8000 \
+  -v hotdog-data:/data \
+  -e DATABASE_PATH=/data/hotdog_mafia.db \
+  -e WEBAPP_URL=https://sizning-domeningiz \
+  -e CUSTOMER_BOT_TOKEN=... \
+  -e ADMIN_BOT_TOKEN=... \
+  -e ADMIN_IDS=... \
+  hotdog-mafia
+```
+Docker bo‘lmasa: `pip install -r requirements.txt` keyin `python main.py` (jarayonni `systemd`/`pm2` bilan doimiy saqlang).

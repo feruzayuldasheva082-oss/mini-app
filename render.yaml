@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: hotdog-mafia
+    runtime: docker
+    region: frankfurt
+    plan: 0.5c-512mb
+    healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 60
+    disk:
+      name: hotdog-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_PATH
+        value: /data/hotdog_mafia.db
+      - key: WEBAPP_URL
+        value: https://hotdog-mafia.onrender.com
+      - key: CUSTOMER_BOT_TOKEN
+        sync: false
+      - key: ADMIN_BOT_TOKEN
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
